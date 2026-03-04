@@ -1,0 +1,30 @@
+---
+description: API route patterns for user-scoped access
+globs: app/api/**/*.ts
+alwaysApply: false
+---
+
+# API route user scoping
+
+All API routes under `app/api/` must enforce per-user isolation.
+
+```typescript
+// ✅ GOOD – resolve session, guard, scope query
+import { getServerSession } from "next-auth";
+
+export async function GET(req: Request) {
+  const session = await getServerSession();
+  if (!session?.user?.id) return new Response(null, { status: 401 });
+
+  const items = await prisma.assignment.findMany({
+    where: { userId: session.user.id },
+    orderBy: { dueDate: "asc" },
+  });
+  return Response.json(items);
+}
+```
+
+- Always call `getServerSession()` (or equivalent) first
+- Return 401 if no session
+- Include `userId: session.user.id` in every `where` clause
+- For resource-by-id routes, verify `resource.userId === session.user.id` before returning; otherwise 404

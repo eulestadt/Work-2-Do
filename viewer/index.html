@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Homework & Gameplan</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --text: #1d1d1d;
+      --muted: #555;
+      --accent: #2563eb;
+      --alert: #b91c1c;
+      --blue-tint: #e8eef6;
+      --blue-border: #c5d4e8;
+      --glass-bg: rgba(255, 255, 255, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.4);
+      --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text: #e5e5e5;
+        --muted: #a3a3a3;
+        --accent: #60a5fa;
+        --blue-tint: rgba(30, 58, 138, 0.3);
+        --blue-border: rgba(96, 165, 250, 0.3);
+        --glass-bg: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.15);
+        --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0.5rem 0.75rem 1rem;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--text);
+      background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 50%, #f8fafc 100%);
+      min-height: 100vh;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e293b 100%); }
+    }
+    @media (min-width: 800px) {
+      body { max-width: 42rem; margin: 0 auto; padding: 0.6rem 1rem 1.25rem; }
+    }
+    h1, h2, h3 { font-weight: 600; margin: 0 0 0.25em; }
+    h2 { font-size: 0.95rem; color: var(--accent); }
+    h3 { font-size: 0.9rem; margin-top: 0.5em; }
+    a { color: var(--accent); }
+    .card {
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+      border-radius: 16px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+    .card-gameplan {
+      background: rgba(255, 255, 255, 0.6);
+    }
+    @media (prefers-color-scheme: dark) {
+      .card-gameplan { background: rgba(255, 255, 255, 0.08); }
+    }
+    .card-digest {
+      background: rgba(255, 255, 255, 0.5);
+      border-color: var(--blue-border);
+    }
+    @media (prefers-color-scheme: dark) {
+      .card-digest { background: rgba(30, 58, 138, 0.25); }
+    }
+    .card h2 { margin: 0 0 0.35em; font-size: 0.9rem; }
+    #load-error { color: var(--alert); padding: 0.4rem 0; font-size: 12px; }
+    #loading { color: var(--muted); padding: 0.4rem 0; font-size: 12px; }
+    .gameplan-actions { margin-bottom: 0.5rem; display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .gameplan-actions button {
+      font-size: 12px; padding: 0.25rem 0.5rem; border-radius: 12px; border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.4); color: var(--accent); cursor: pointer; font-weight: 500;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .gameplan-actions button:hover { background: rgba(255, 255, 255, 0.6); }
+    .gameplan-actions button.active { background: var(--blue-tint); border-color: var(--accent); }
+    @media (prefers-color-scheme: dark) {
+      .gameplan-actions button { background: rgba(255, 255, 255, 0.1); }
+      .gameplan-actions button:hover { background: rgba(255, 255, 255, 0.2); }
+    }
+    .content { overflow-wrap: break-word; }
+    .content ul { padding-left: 1rem; margin: 0.15em 0; }
+    .content li { margin-bottom: 0.12em; }
+    .content strong { color: var(--text); }
+    .content p { margin: 0.2em 0; }
+    .content p:first-child { margin-top: 0; }
+    .content p:last-child { margin-bottom: 0; }
+    .content h3 { margin: 0.4em 0 0.15em; font-size: 0.85rem; }
+    .content blockquote { border-left: 2px solid #e5e5e5; padding-left: 0.5rem; margin: 0.25em 0; color: var(--muted); font-size: 12px; }
+    .no-gameplan { color: var(--muted); font-style: italic; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div id="loading">Loading…</div>
+  <div id="load-error" style="display:none;"></div>
+  <div id="app" style="display:none;">
+    <section id="gameplan" aria-label="Gameplan"></section>
+    <section id="digest" aria-label="Digest"></section>
+  </div>
+  <script>
+    // When served by Flask at / we use /api/latest; when opened as /viewer/ use relative path
+    const jsonUrl = (window.location.pathname === '/' || window.location.pathname === '/index.html')
+      ? '/api/latest'
+      : (window.location.pathname.includes('/viewer') ? '../output/latest.json' : 'output/latest.json');
+
+    fetch(jsonUrl)
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(r.status === 404 ? 'No digest yet.' : r.statusText)))
+      .then(data => {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+
+        const hasYesterday = !!data.gameplan_yesterday_md;
+        const hasToday = !!data.gameplan_md;
+        const hasTomorrow = !!data.gameplan_tomorrow_md;
+        const hasAny = hasYesterday || hasToday || hasTomorrow;
+        const gameplanCard = document.createElement('div');
+        gameplanCard.className = 'card card-gameplan';
+        let actions = '';
+        if (hasAny) {
+          actions = '<div class="gameplan-actions">' +
+            (hasYesterday ? '<button type="button" class="yesterday-btn" aria-pressed="false">Yesterday</button>' : '') +
+            (hasToday ? '<button type="button" class="today-btn active" aria-pressed="true">Today</button>' : '') +
+            (hasTomorrow ? '<button type="button" class="tomorrow-btn" aria-pressed="false">Tomorrow</button>' : '') +
+            '</div>';
+        }
+        gameplanCard.innerHTML =
+          '<h2>What should I work on?</h2>' + actions +
+          (hasYesterday ? '<div class="content gameplan-yesterday-content" style="display:none">' + marked.parse(data.gameplan_yesterday_md) + '</div>' : '') +
+          (hasToday ? '<div class="content gameplan-content">' + marked.parse(data.gameplan_md) + '</div>' : '') +
+          (hasTomorrow ? '<div class="content gameplan-tomorrow-content" style="display:none">' + marked.parse(data.gameplan_tomorrow_md) + '</div>' : '');
+        if (!hasAny) {
+          gameplanCard.innerHTML =
+            '<h2>What should I work on?</h2><p class="no-gameplan">Run the CLI with <code>--gameplan</code> and set GEMINI_API_KEY to generate a gameplan.</p>';
+        }
+        document.getElementById('gameplan').appendChild(gameplanCard);
+
+        if (hasAny) {
+          const yesterdayBtn = gameplanCard.querySelector('.yesterday-btn');
+          const todayBtn = gameplanCard.querySelector('.today-btn');
+          const tomorrowBtn = gameplanCard.querySelector('.tomorrow-btn');
+          const yesterdayContent = gameplanCard.querySelector('.gameplan-yesterday-content');
+          const todayContent = gameplanCard.querySelector('.gameplan-content');
+          const tomorrowContent = gameplanCard.querySelector('.gameplan-tomorrow-content');
+          function showYesterday() {
+            if (yesterdayContent) yesterdayContent.style.display = '';
+            if (todayContent) todayContent.style.display = 'none';
+            if (tomorrowContent) tomorrowContent.style.display = 'none';
+            if (yesterdayBtn) { yesterdayBtn.classList.add('active'); yesterdayBtn.setAttribute('aria-pressed', 'true'); }
+            if (todayBtn) { todayBtn.classList.remove('active'); todayBtn.setAttribute('aria-pressed', 'false'); }
+            if (tomorrowBtn) { tomorrowBtn.classList.remove('active'); tomorrowBtn.setAttribute('aria-pressed', 'false'); }
+          }
+          function showToday() {
+            if (yesterdayContent) yesterdayContent.style.display = 'none';
+            if (todayContent) todayContent.style.display = '';
+            if (tomorrowContent) tomorrowContent.style.display = 'none';
+            if (yesterdayBtn) { yesterdayBtn.classList.remove('active'); yesterdayBtn.setAttribute('aria-pressed', 'false'); }
+            if (todayBtn) { todayBtn.classList.add('active'); todayBtn.setAttribute('aria-pressed', 'true'); }
+            if (tomorrowBtn) { tomorrowBtn.classList.remove('active'); tomorrowBtn.setAttribute('aria-pressed', 'false'); }
+          }
+          function showTomorrow() {
+            if (yesterdayContent) yesterdayContent.style.display = 'none';
+            if (todayContent) todayContent.style.display = 'none';
+            if (tomorrowContent) tomorrowContent.style.display = '';
+            if (yesterdayBtn) { yesterdayBtn.classList.remove('active'); yesterdayBtn.setAttribute('aria-pressed', 'false'); }
+            if (todayBtn) { todayBtn.classList.remove('active'); todayBtn.setAttribute('aria-pressed', 'false'); }
+            if (tomorrowBtn) { tomorrowBtn.classList.add('active'); tomorrowBtn.setAttribute('aria-pressed', 'true'); }
+          }
+          if (yesterdayBtn) yesterdayBtn.addEventListener('click', showYesterday);
+          if (todayBtn) todayBtn.addEventListener('click', showToday);
+          if (tomorrowBtn) tomorrowBtn.addEventListener('click', showTomorrow);
+          if (hasTomorrow && !hasToday && !hasYesterday) showTomorrow();
+          else if (hasYesterday && !hasToday && !hasTomorrow) showYesterday();
+        }
+
+        if (data.digest_md) {
+          document.getElementById('digest').innerHTML =
+            '<div class="card card-digest"><h2>Full digest</h2><div class="content">' +
+            marked.parse(data.digest_md) + '</div></div>';
+        }
+      })
+      .catch(err => {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('load-error').style.display = 'block';
+        document.getElementById('load-error').textContent =
+          'Could not load output. ' + (err.message || 'Serve from the app or run the CLI to generate output/latest.json.');
+      });
+  </script>
+</body>
+</html>

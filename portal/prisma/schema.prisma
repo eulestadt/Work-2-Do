@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String?
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  geminiConfig  GeminiConfig?
+  courses       Course[]
+  syllabi       Syllabus[]
+  assignments   Assignment[]
+  widgetConfig  WidgetConfig?
+  appApiKeys    AppApiKey[]
+  timerSessions TimerSession[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model GeminiConfig {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  encryptedApiKey String
+  modelName       String   @default("gemini-2.0-flash")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Course {
+  id                   String   @id @default(cuid())
+  userId               String
+  populiCourseCode     String?
+  title                String
+  term                 String?
+  meetingScheduleJson  String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  syllabi    Syllabus[]
+  assignments Assignment[]
+}
+
+model Syllabus {
+  id               String   @id @default(cuid())
+  userId           String
+  courseId         String
+  storagePath      String
+  originalFilename String
+  mimeType         String?
+  uploadStatus     String   @default("uploaded") // uploaded | parsed | error
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model Assignment {
+  id                   String    @id @default(cuid())
+  userId               String
+  courseId             String
+  title                String
+  type                 String    // reading | homework | exam | project | other
+  description          String?
+  dueDate              DateTime?
+  estimatedTimeMinutes Int?
+  source               String    @default("manual") // manual | ai_parsed
+  completedAt          DateTime? // checklist completion
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course        Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  timerSessions TimerSession[]
+}
+
+model WidgetConfig {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  theme           String   @default("light") // light | dark | minimal
+  timeWindow      String   @default("today") // today | next_3_days | week
+  showCoursesJson String?  // JSON array of courseIds
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AppApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  keyHash   String   // SHA-256 of the raw key
+  label     String?  // "iPhone", "iPad"
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TimerSession {
+  id           String    @id @default(cuid())
+  userId       String
+  assignmentId String
+  startedAt   DateTime
+  endedAt     DateTime?
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+}

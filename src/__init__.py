@@ -1,0 +1,4 @@
+"""
+Homework aggregator package initialization.
+"""
+

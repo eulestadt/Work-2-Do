@@ -1,0 +1,15 @@
+Feature: Login to Populi
+
+  Scenario: Successful login with valid credentials
+    Given I open the login page http://sattler.populiweb.com
+    When I enter Login "phoenix.wang24"
+    And I enter Password "Dnlufyt0ewmard!"
+    And I click on the Login button
+    Then I should see "HomeMy ProfileMy CoursesDirectory Dashboard To-Dos Groups Links Forms The Feed" text on the logged in page
+    When I click on "My Courses" link
+    Then I should see "Current Courses" text on the page
+    When I click "BIO 303: Bioethics"
+    Then I should see "Bulletin Board" text on the page
+    When I click "Syllabus"
+    Then I should see a Syllabus in a document_viewer iframe on the bottom
+    Parse the information     Then Close the browser

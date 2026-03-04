@@ -1,0 +1,53 @@
+---
+description: Core architecture and conventions for the generalized homework portal
+alwaysApply: true
+---
+
+# Homework Portal – Project Rule
+
+## Stack
+
+- **Next.js** (App Router) + React + TypeScript
+- **Prisma** + PostgreSQL
+- **Auth**: NextAuth or Supabase Auth (email/password or passwordless)
+- **File storage**: S3-compatible (e.g. AWS S3, Cloudflare R2) for syllabi; never rely on ephemeral disk
+- **Hosting**: Railway (web service + Postgres add-on)
+
+## Multi-tenancy
+
+Every record is scoped by `userId`. In all API routes and server actions:
+
+- Resolve `userId` from the session; return 401 if unauthenticated
+- Filter all DB queries by `userId` (e.g. `where: { userId }`)
+- Return 404/403 when accessing another user's resources
+
+## Data model (Prisma)
+
+| Model | Key fields |
+|-------|------------|
+| User | id, email, name |
+| GeminiConfig | userId, encryptedApiKey, modelName |
+| Course | userId, populiCourseCode?, title, term, meetingScheduleJson |
+| Syllabus | userId, courseId, storagePath, originalFilename, uploadStatus |
+| Assignment | userId, courseId, title, type, description, dueDate, estimatedTimeMinutes, source |
+| WidgetConfig | userId, theme, timeWindow, showCourses |
+
+## Security
+
+- **Gemini API keys**: Encrypt at rest (e.g. `APP_ENCRYPTION_KEY`); decrypt only in server-side code
+- **Never** send API keys to the client; only backend routes / server actions use them
+- Rate-limit AI endpoints per user and globally
+
+## File structure
+
+- `app/(auth)/` – login, register
+- `app/(app)/` – protected layout; dashboard, courses, assignments, settings, widget
+- `app/api/` – API routes; all require session and enforce `userId` scoping
+- `app/api/widget/today`, `app/api/widget/week` – read-only JSON for lockscreen clients
+- `prisma/schema.prisma` – single source of truth for models
+
+## Conventions
+
+- Use server actions or API routes for mutations; keep client components thin
+- Widget endpoints return compact JSON: `{ items: [{ title, courseTitle, dueDate, remainingMinutes }] }`
+- Syllabus parsing: backend-only; store status on `Syllabus.uploadStatus`; allow re-parse on failure

@@ -1,0 +1,16 @@
+# Keep upload under Railway's ~45MB limit so "railway up" doesn't timeout
+.venv
+.env
+.env.*
+!.env.example
+__pycache__
+*.pyc
+.pytest_cache
+.coverage
+htmlcov
+output
+.git
+.railway
+*.md
+!viewer/*.html
+data/text_extract/
