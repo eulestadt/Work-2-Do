@@ -1,0 +1,21 @@
+# Copy to config/courses.yaml and fill in your courses.
+# See docs/RAILWAY.md and src/ for usage.
+
+courses:
+  - code: example_course
+    name: Example Course
+    source: pdf_syllabus
+    meeting_pattern: MWF
+    data_file: data/example_schedule.yaml
+    requires_manual_check: false
+
+  # Populi example:
+  # - code: my_course
+  #   name: My Course
+  #   source: populi_page
+  #   meeting_pattern: TTh
+  #   term_start: 2026-01-19
+  #   populi:
+  #     url: https://your-school.populiweb.com/router/courseofferings/ID/syllabus
+  #     mode: syllabus
+  #   requires_manual_check: false

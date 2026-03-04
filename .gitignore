@@ -1,5 +1,11 @@
-# Debug extracts: one .txt per syllabus PDF (run scripts/extract_syllabus_text.py)
-data/text_extract/
+# User data – courses, syllabi, Populi cache (never commit)
+data/
+
+# Course config – your course list and Populi URLs (never commit)
+config/courses.yaml
+
+# Portal SQLite dev DB (user data)
+portal/prisma/*.db
 
 # Local env (API keys, secrets) – never commit
 .env
@@ -26,6 +32,7 @@ output/
 .idea/
 *.swp
 *.swo
+**/xcuserdata/
 
 # Sandbox / deps
 .sandbox-deps/
